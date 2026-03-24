@@ -1,6 +1,6 @@
 # DL_Project_24f2002642
 
-Music Genre Classification — DL & GenAI Project, T1-2026  
+Messy Mashup DL & GenAI Project, T1-2026  
 IIT Madras BS Data Science | Roll No: 24f2002642
 
 Live demo: [spotiknow.vercel.app](https://spotiknow.vercel.app)
@@ -33,17 +33,15 @@ Training ran for 12 epochs with AdamW, MixUp augmentation (alpha=0.4), SpecAugme
 
 ### 3. ResNet50 MelSpec TwoPhase (Transfer Learning)
 - Instead of training a CNN from scratch, this model uses ResNet50 pretrained on ImageNet and adapts it for audio by feeding it 3-channel mel spectrograms channel 1 is the mel spectrogram itself, channel 2 is the first order delta (rate of change over time), and channel 3 is the delta-delta (acceleration). This gives the model something closer to how we perceive audio changes, not just a static snapshot. Total parameters: 24,563,274 with 1,055,242 in the custom head.
-Training followed a two-phase strategy. Phase 1 froze the backbone and trained only the head (1,055,242 params) for 3 epochs — val F1 went from 0.474 → 0.607 → 0.616. Phase 2 unfroze everything and fine-tuned with layer-wise learning rates for 5 more epochs. Val F1 peaked at 0.6611. The model never really broke past 0.66 on validation, which suggests that ImageNet features don't transfer as cleanly to audio as AudioSet-pretrained features do. 
+Training followed a two-phase strategy. Phase 1 froze the backbone and trained only the head (1,055,242 params) for 3 epochs val F1 went from 0.474 → 0.607 → 0.616. Phase 2 unfroze everything and fine-tuned with layer-wise learning rates for 5 more epochs. Val F1 peaked at 0.6611. The model never really broke past 0.66 on validation, which suggests that ImageNet features don't transfer as cleanly to audio as AudioSet-pretrained features do. 
 - Kaggle score: 0.559
 
 ### 4. AST Two-Phase Finetune (Pretrained Transformer)
 -The strongest model by a significant margin. The Audio Spectrogram Transformer (MIT/ast-finetuned-audioset-10-10-0.4593) was originally trained on AudioSet with 527 classes. The classifier head was replaced with a 10-class head for genres, and the full 86,196,490 parameter model was fine-tuned on the competition data.
-Training data was 5,000 synthetically mixed samples per epoch — each sample takes 4 stems from songs of the same genre, applies tempo stretching (±12%), random gain, and ESC-50 environmental noise at 70% probability before passing through the ASTFeatureExtractor. The 85/15 train-val split gave 150 clean validation samples.
+Training data was 5,000 synthetically mixed samples per epoch   each sample takes 4 stems from songs of the same genre, applies tempo stretching (±12%), random gain, and ESC-50 environmental noise at 70% probability before passing through the ASTFeatureExtractor. The 85/15 train-val split gave 150 clean validation samples.
 Phase 1 froze the entire backbone and trained just the 9,226-parameter classifier head for 3 epochs. Val F1 went 0.765 → 0.824 → 0.818, with the best weights saved at epoch 2. Phase 2 loaded those weights, unfroze all 86M parameters, and used layer-wise learning rates (backbone at 2e-5, head 10× higher at 2e-4). Over 5 epochs the val F1 went 0.816 → 0.839 → 0.825 → 0.831 → 0.832, with early stopping triggered after epoch 5. Best Phase 2 checkpoint was at epoch 2 (val F1: 0.8388).
 
 - Kaggle score: 0.8911
-
-
 
 ---
 
@@ -60,7 +58,7 @@ Phase 1 froze the entire backbone and trained just the 9,226-parameter classifie
 
 ## W&B Tracking
 
-All runs are logged at:[wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026](https://wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026)
+All runs are logged at: [wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026](https://wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026)
 
 Report at:
 [https://api.wandb.ai/links/choprayuvraj-iit-madras/inmyz547](https://api.wandb.ai/links/choprayuvraj-iit-madras/inmyz547)
@@ -75,23 +73,10 @@ Metrics tracked: `train_loss`, `train_f1`, `train_acc`, `val_loss`, `val_f1`, `v
 The AST model is deployed on HuggingFace Spaces (Gradio) and redirected through Vercel.
 
 - HuggingFace Space: [Yuvraj-Chopra/DL-GEN-AI-Project](https://huggingface.co/spaces/Yuvraj-Chopra/DL-GEN-AI-Project)
+
 - Live URL: [spotiknow.vercel.app](https://spotiknow.vercel.app)
 
 Upload any WAV or MP3 file and it returns the predicted genre.
-
----
-
-## How training data was built
-
-The dataset only provides stems, not full mixed songs. So instead of using pre-mixed files, I built a synthetic mixing pipeline:
-
-- For each training sample, randomly pick a genre
-- Pick one song folder per stem (so stems can come from different songs of the same genre)
-- Mix all 4 stems together
-- Apply augmentations (tempo stretch, gain variation, ESC-50 noise)
-- Normalize and pass through the feature extractor
-
-This gave me 5,000 unique training samples per epoch from just 850 songs, and also better matches the test distribution.
 
 ---
 
