@@ -60,8 +60,7 @@ Phase 1 froze the entire backbone and trained just the 9,226-parameter classifie
 
 ## W&B Tracking
 
-All runs are logged at:  
-[wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026](https://wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026)
+All runs are logged at:[wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026](https://wandb.ai/choprayuvraj-iit-madras/24f2002642-t12026)
 
 Report at:
 [https://api.wandb.ai/links/choprayuvraj-iit-madras/inmyz547](https://api.wandb.ai/links/choprayuvraj-iit-madras/inmyz547)
